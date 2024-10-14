@@ -303,7 +303,6 @@ public class Ticket {
         this._backgroundImagePath = config.get("backgroundImagePath", "");
         this._properties = config.getNode("properties").clone();
         this._lore = config.getList("lore", String.class);
-        System.out.println("get lore" + _lore.get(0));
     }
 
     /**

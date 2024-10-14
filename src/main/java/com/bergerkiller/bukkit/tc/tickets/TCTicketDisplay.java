@@ -70,9 +70,7 @@ public class TCTicketDisplay extends MapDisplay {
             ItemMeta itemMeta = this.getMapItem().getItemMeta();
             if (itemMeta != null) {
                 itemMeta.setLore(ticket.getLore());
-                System.out.println("itemMeta != null");
             }
-//            System.out.println("ticket.getLore()" + ticket.getLore().get(0));
             this.getMapItem().setItemMeta(itemMeta);
         }
     }
