@@ -2,6 +2,9 @@ package com.bergerkiller.bukkit.tc.tickets;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import com.bergerkiller.bukkit.common.inventory.CommonItemStack;
@@ -28,6 +31,7 @@ public class Ticket {
     private int _maxNumberOfUses = 1;
     private long _expirationTime = -1L;
     private String _backgroundImagePath = "";
+    private List<String> _lore = Collections.emptyList();
     private ConfigurationNode _properties = new ConfigurationNode();
 
     Ticket(String name) {
@@ -129,6 +133,14 @@ public class Ticket {
      */
     public void setBackgroundImagePluginPath(JavaPlugin plugin, String path) {
         this._backgroundImagePath = plugin.getName() + ":" + path;
+    }
+
+    /**
+     * 获取ticket的lore
+     * @return lore
+     */
+    public List<String> getLore() {
+        return _lore;
     }
 
     /**
@@ -290,6 +302,8 @@ public class Ticket {
         this._expirationTime = config.get("expirationTimeMillis", -1L);
         this._backgroundImagePath = config.get("backgroundImagePath", "");
         this._properties = config.getNode("properties").clone();
+        this._lore = config.getList("lore", String.class);
+        System.out.println("get lore" + _lore.get(0));
     }
 
     /**
@@ -303,6 +317,9 @@ public class Ticket {
         config.set("maxNumberOfUses", this._maxNumberOfUses);
         config.set("expirationTimeMillis", this._expirationTime);
         config.set("backgroundImagePath", this._backgroundImagePath);
+
+        // 新增lore
+        config.set("lore", _lore);
 
         ConfigurationNode savedProps = config.getNode("properties");
         for (Map.Entry<String, Object> entry : this._properties.getValues().entrySet()) {

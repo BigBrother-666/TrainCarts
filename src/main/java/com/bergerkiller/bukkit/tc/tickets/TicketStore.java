@@ -461,6 +461,10 @@ public class TicketStore {
             if (group != null) {
                 group.onPropertiesChanged();
             }
+
+            // 修改train tickets为当前乘客的tickets
+            trainProperties.clearTickets();
+            trainProperties.addTicket(ticket.getName());
         }
         return true;
     }

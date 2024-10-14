@@ -7,6 +7,9 @@ import com.bergerkiller.bukkit.common.map.MapSessionMode;
 import com.bergerkiller.bukkit.common.map.MapTexture;
 import com.bergerkiller.bukkit.common.utils.StringUtil;
 import com.bergerkiller.bukkit.tc.Localization;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Objects;
 
 public class TCTicketDisplay extends MapDisplay {
 
@@ -62,6 +65,15 @@ public class TCTicketDisplay extends MapDisplay {
             } else {
                 this.getLayer(1).draw(MapFont.MINECRAFT, 10, 74, MapColorPalette.COLOR_RED, ownerName);
             }
+
+            // 设置lore
+            ItemMeta itemMeta = this.getMapItem().getItemMeta();
+            if (itemMeta != null) {
+                itemMeta.setLore(ticket.getLore());
+                System.out.println("itemMeta != null");
+            }
+//            System.out.println("ticket.getLore()" + ticket.getLore().get(0));
+            this.getMapItem().setItemMeta(itemMeta);
         }
     }
 }
