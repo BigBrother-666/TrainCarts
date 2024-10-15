@@ -32,6 +32,8 @@ public class Ticket {
     private long _expirationTime = -1L;
     private String _backgroundImagePath = "";
     private List<String> _lore = Collections.emptyList();
+    private String _displayName = "";
+    private String _ticketName = "";
     private ConfigurationNode _properties = new ConfigurationNode();
 
     Ticket(String name) {
@@ -141,6 +143,22 @@ public class Ticket {
      */
     public List<String> getLore() {
         return _lore;
+    }
+
+    /**
+     * 获取ticket的显示地图上的名字
+     * @return displayName
+     */
+    public String getDisplayName() {
+        return _displayName;
+    }
+
+    /**
+     * 获取ticket的聊天框显示的名字/车票物品名
+     * @return ticketName
+     */
+    public String getTicketName() {
+        return _ticketName;
     }
 
     /**
@@ -303,6 +321,8 @@ public class Ticket {
         this._backgroundImagePath = config.get("backgroundImagePath", "");
         this._properties = config.getNode("properties").clone();
         this._lore = config.getList("lore", String.class);
+        this._displayName = config.get("displayName", config.getName());
+        this._ticketName = config.get("ticketName", config.getName());
     }
 
     /**
@@ -316,9 +336,9 @@ public class Ticket {
         config.set("maxNumberOfUses", this._maxNumberOfUses);
         config.set("expirationTimeMillis", this._expirationTime);
         config.set("backgroundImagePath", this._backgroundImagePath);
-
-        // 新增lore
         config.set("lore", _lore);
+        config.set("displayName", _displayName);
+        config.set("ticketName", _ticketName);
 
         ConfigurationNode savedProps = config.getNode("properties");
         for (Map.Entry<String, Object> entry : this._properties.getValues().entrySet()) {
@@ -339,12 +359,14 @@ public class Ticket {
                 .updateCustomData(tag -> {
                     tag.putValue("plugin", "TrainCarts");
                     tag.putValue(TicketStore.KEY_TICKET_NAME, this.getName());
+                    tag.putValue(TicketStore.KEY_TICKET_TICKET_NAME, this.getTicketName());
+                    tag.putValue(TicketStore.KEY_TICKET_DISPLAY_NAME, this.getDisplayName());
                     tag.putValue(TicketStore.KEY_TICKET_CREATION_TIME, System.currentTimeMillis());
                     tag.putValue(TicketStore.KEY_TICKET_NUMBER_OF_USES, 0);
                     tag.putUUID(TicketStore.KEY_TICKET_OWNER_UUID, owner.getUniqueId());
                     tag.putValue(TicketStore.KEY_TICKET_OWNER_NAME, owner.getDisplayName());
                 })
-                .setCustomNameMessage("Train Ticket for " + this.getName())
+                .setCustomNameMessage(this.getTicketName())
                 .toBukkit();
     }
 
@@ -357,13 +379,15 @@ public class Ticket {
         return CommonItemStack.of(MapDisplay.createMapItem(TCTicketDisplay.class))
                 .updateCustomData(tag -> {
                     tag.putValue("plugin", "TrainCarts");
+                    tag.putValue(TicketStore.KEY_TICKET_TICKET_NAME, this.getTicketName());
+                    tag.putValue(TicketStore.KEY_TICKET_DISPLAY_NAME, this.getDisplayName());
                     tag.putValue(TicketStore.KEY_TICKET_NAME, this.getName());
                     tag.putValue(TicketStore.KEY_TICKET_CREATION_TIME, System.currentTimeMillis());
                     tag.putValue(TicketStore.KEY_TICKET_NUMBER_OF_USES, 0);
                     tag.putUUID(TicketStore.KEY_TICKET_OWNER_UUID, owner.getUniqueId());
                     tag.putValue(TicketStore.KEY_TICKET_OWNER_NAME, owner.getDisplayName());
                 })
-                .setCustomNameMessage("Train Ticket for " + this.getName())
+                .setCustomNameMessage(this.getTicketName())
                 .toBukkit();
     }
 }

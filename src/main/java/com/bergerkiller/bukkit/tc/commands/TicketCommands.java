@@ -1,6 +1,7 @@
 package com.bergerkiller.bukkit.tc.commands;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -198,11 +199,14 @@ public class TicketCommands {
                     continue;
                 }
 
-                Localization.TICKET_BUY.message(player, TrainCarts.getCurrencyText(price));
+                Localization.TICKET_BUY.message(player, TrainCarts.getCurrencyText(price), ticket.getTicketName());
 
                 ItemStack item = ticket.createItem(player);
-                player.getInventory().addItem(item);
-                sender.sendMessage(ChatColor.GREEN + "Ticket " + ChatColor.YELLOW + ticket.getName() + ChatColor.GREEN + 
+                if (!player.getInventory().addItem(item).isEmpty()) {
+                    // 背包满 车票丢到地上
+                    player.getWorld().dropItemNaturally(player.getLocation(), item);
+                }
+                sender.sendMessage(ChatColor.GREEN + "Ticket " + ChatColor.YELLOW + ticket.getTicketName() + ChatColor.GREEN +
                         " given to player " + ChatColor.YELLOW + player.getName());
             }
         }

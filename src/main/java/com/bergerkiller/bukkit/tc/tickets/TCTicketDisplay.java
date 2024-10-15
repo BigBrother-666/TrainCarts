@@ -45,7 +45,7 @@ public class TCTicketDisplay extends MapDisplay {
         if (ticket == null) {
             this.getLayer(1).draw(MapFont.MINECRAFT, 10, 40, MapColorPalette.COLOR_RED, Localization.TICKET_MAP_INVALID.get());
         } else {
-            this.getLayer(1).draw(MapFont.MINECRAFT, 10, 40, MapColorPalette.COLOR_BLACK, ticket.getName());
+            this.getLayer(1).draw(MapFont.MINECRAFT, 10, 40, MapColorPalette.COLOR_BLACK, ticket.getDisplayName());
             if (TicketStore.isTicketExpired(this.getMapItem())) {
                 this.getLayer(1).draw(MapFont.MINECRAFT, 10, 57, MapColorPalette.COLOR_RED, Localization.TICKET_MAP_EXPIRED.get());
             } else {

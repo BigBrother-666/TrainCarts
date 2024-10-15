@@ -33,6 +33,8 @@ public class TicketStore {
     protected static final String KEY_TICKET_NUMBER_OF_USES = "ticketNumberOfUses";
     protected static final String KEY_TICKET_OWNER_UUID = "ticketOwner";
     protected static final String KEY_TICKET_OWNER_NAME = "ticketOwnerName";
+    protected static final String KEY_TICKET_DISPLAY_NAME = "ticketDisplayName";
+    protected static final String KEY_TICKET_TICKET_NAME = "ticketTicketName";
 
     /**
      * Creates a new ticket, using an existing ticket as a base configuration.
@@ -332,57 +334,80 @@ public class TicketStore {
      * @return True when the player meets ticket requirements, False if not
      */
     public static boolean handleTickets(Player player, TrainProperties trainProperties) {
+        // 只检查主手车票，没车票则是普通车
+        CommonItemStack mainHand = CommonItemStack.of(HumanHand.getItemInMainHand(player));
+        if ((trainProperties.getTickets().contains("/") && !isSuitableTicket(mainHand, trainProperties))) {
+            // 设置为普通车
+            trainProperties.clearTickets();
+        }
         if (trainProperties.getTickets().isEmpty()) {
             return true; // no tickets are used
         }
 
-        // First check both player's hands for tickets. These have priority!
-        CommonItemStack mainHand = CommonItemStack.of(HumanHand.getItemInMainHand(player));
-        CommonItemStack offHand = CommonItemStack.of(HumanHand.getItemInOffHand(player));
         if (isSuitableTicket(mainHand, trainProperties)) {
-            if (isSuitableTicket(offHand, trainProperties)) {
-                Localization.TICKET_CONFLICT.message(player);
-                return false;
-            }
             if (preUseTicket(player, mainHand, trainProperties)) {
                 HumanHand.setItemInMainHand(player, useTicketItem(mainHand).toBukkit());
                 return true;
             } else {
                 return false;
             }
-        } else if (isSuitableTicket(offHand, trainProperties)) {
-            if (preUseTicket(player, offHand, trainProperties)) {
-                HumanHand.setItemInOffHand(player, useTicketItem(offHand).toBukkit());
-                return true;
-            } else {
-                return false;
-            }
         }
+
+        // 主手无车票/车票不正确
+        Ticket mainHandTicket = getTicketFromItem(mainHand);
+        if (mainHandTicket != null) {
+            Localization.TICKET_CONFLICT_TYPE.message(player, mainHandTicket.getTicketName(), String.join(" ", trainProperties.getTickets()));
+        } else {
+            Localization.TICKET_REQUIRED.message(player, String.join(" ", trainProperties.getTickets()));
+        }
+        return false;
+
+        // First check both player's hands for tickets. These have priority!
+//        CommonItemStack offHand = CommonItemStack.of(HumanHand.getItemInOffHand(player));
+//        if (isSuitableTicket(mainHand, trainProperties)) {
+//            if (isSuitableTicket(offHand, trainProperties)) {
+//                Localization.TICKET_CONFLICT.message(player);
+//                return false;
+//            }
+//            if (preUseTicket(player, mainHand, trainProperties)) {
+//                HumanHand.setItemInMainHand(player, useTicketItem(mainHand).toBukkit());
+//                return true;
+//            } else {
+//                return false;
+//            }
+//        } else if (isSuitableTicket(offHand, trainProperties)) {
+//            if (preUseTicket(player, offHand, trainProperties)) {
+//                HumanHand.setItemInOffHand(player, useTicketItem(offHand).toBukkit());
+//                return true;
+//            } else {
+//                return false;
+//            }
+//        }
 
         // If either hand has a ticket, show an 'incorrect' message
-        {
-            Ticket mainHandTicket = getTicketFromItem(mainHand);
-            Ticket offHandTicket = getTicketFromItem(offHand);
-            if (mainHandTicket != null || offHandTicket != null) {
-                if (mainHandTicket != null) {
-                    Localization.TICKET_CONFLICT_TYPE.message(player, mainHandTicket.getName());
-                }
-                if (offHandTicket != null) {
-                    Localization.TICKET_CONFLICT_TYPE.message(player, offHandTicket.getName());
-                }
-                return false;
-            }            
-        }
+//        {
+//            Ticket mainHandTicket = getTicketFromItem(mainHand);
+//            Ticket offHandTicket = getTicketFromItem(offHand);
+//            if (mainHandTicket != null || offHandTicket != null) {
+//                if (mainHandTicket != null) {
+//                    Localization.TICKET_CONFLICT_TYPE.message(player, mainHandTicket.getName());
+//                }
+//                if (offHandTicket != null) {
+//                    Localization.TICKET_CONFLICT_TYPE.message(player, offHandTicket.getName());
+//                }
+//                return false;
+//            }
+//        }
 
         // Handle tickets in the quickbar, then rest of inventory
-        TicketHandleResult result = handleTicketsInventory(player, true, trainProperties);
-        if (result == TicketHandleResult.MISSING) {
-            result = handleTicketsInventory(player, false, trainProperties);
-        }
-        if (result == TicketHandleResult.MISSING) {
-            Localization.TICKET_REQUIRED.message(player);
-        }
-        return (result == TicketHandleResult.OK);
+//        TicketHandleResult result = handleTicketsInventory(player, true, trainProperties);
+//        if (result == TicketHandleResult.MISSING) {
+//            result = handleTicketsInventory(player, false, trainProperties);
+//        }
+//        if (result == TicketHandleResult.MISSING) {
+//            Localization.TICKET_REQUIRED.message(player);
+//        }
+//        return (result == TicketHandleResult.OK);
     }
 
     private static enum TicketHandleResult {
@@ -435,7 +460,7 @@ public class TicketStore {
 
     private static boolean preUseTicket(Player player, CommonItemStack item, TrainProperties trainProperties) {
         // Handle permissions and messages to the player
-        String ticketName = item.getCustomData().getValue(KEY_TICKET_NAME, "UNKNOWN");
+        String ticketName = item.getCustomData().getValue(KEY_TICKET_TICKET_NAME, "UNKNOWN");
         if (!isTicketOwner(player, item)) {
             String ownerName = item.getCustomData().getValue(KEY_TICKET_OWNER_NAME, "UNKNOWN");
             Localization.TICKET_CONFLICT_OWNER.message(player, ticketName, ownerName);
@@ -461,10 +486,6 @@ public class TicketStore {
             if (group != null) {
                 group.onPropertiesChanged();
             }
-
-            // 修改train tickets为当前乘客的tickets
-            trainProperties.clearTickets();
-            trainProperties.addTicket(ticket.getName());
         }
         return true;
     }
