@@ -43,7 +43,7 @@ public class FirstPersonViewDefault extends FirstPersonView {
         }
 
         // Must always mount to a separate vehicle with smooth coasters
-        if (seat.useSmoothCoasters()) {
+        if (seat.useSmoothCoasters() && seat.getMember().getProperties().matchTag("rollercoaster")) {
             return true;
         }
 
