@@ -602,6 +602,10 @@ public class CartAttachmentSeat extends CartAttachment {
      * @return True if used
      */
     public boolean useSmoothCoasters() {
+        MinecartMember<?> member = this.getMember();
+        if (member != null) {
+            return member.getProperties().matchTag("rollercoaster") && this._useSmoothCoasters && getPlugin().isEnabled();
+        }
         return this._useSmoothCoasters && getPlugin().isEnabled();
     }
 
